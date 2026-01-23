@@ -6,7 +6,7 @@ Werkzeug==3.0.1
 gunicorn==21.2.0
 
 # Image Processing
-opencv-python==4.8.1.78
+opencv-python-headless==4.8.1.78
 numpy==1.26.3
 Pillow==11.0.0
 
