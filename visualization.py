@@ -11,11 +11,10 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime, timedelta
 import os
-import pandas as pd
-from typing import Dict, Tuple
+import csv
+from typing import Dict, Tuple, List
 
 
 class PM25Visualizer:
@@ -33,8 +32,7 @@ class PM25Visualizer:
         self.results_dir = results_dir
         os.makedirs(results_dir, exist_ok=True)
         
-        # Set style for better-looking plots
-        sns.set_style('whitegrid')
+        # Set matplotlib style for better-looking plots
         plt.rcParams['figure.facecolor'] = 'white'
     
     def create_heatmap(self, image_path: str, pm25_value: float, 
@@ -174,28 +172,42 @@ class PM25Visualizer:
             str: Path to saved graph
         """
         # Load or create history
+        dates = []
+        pm25_values = []
+        
         if os.path.exists(history_file):
-            df = pd.read_csv(history_file)
-        else:
-            df = pd.DataFrame(columns=['date', 'pm25'])
+            try:
+                with open(history_file, 'r') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        dates.append(row['date'])
+                        pm25_values.append(float(row['pm25']))
+            except Exception as e:
+                print(f"Error reading history file: {e}")
         
         # Add current measurement
         current_date = datetime.now().strftime('%Y-%m-%d %H:%M')
-        new_row = pd.DataFrame({'date': [current_date], 'pm25': [current_pm25]})
-        df = pd.concat([df, new_row], ignore_index=True)
+        dates.append(current_date)
+        pm25_values.append(float(current_pm25))
         
         # Keep only last 30 measurements
-        df = df.tail(30)
+        if len(dates) > 30:
+            dates = dates[-30:]
+            pm25_values = pm25_values[-30:]
         
         # Save updated history
         os.makedirs(os.path.dirname(history_file), exist_ok=True)
-        df.to_csv(history_file, index=False)
+        with open(history_file, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=['date', 'pm25'])
+            writer.writeheader()
+            for date, pm25 in zip(dates, pm25_values):
+                writer.writerow({'date': date, 'pm25': pm25})
         
         # Create plot
         fig, ax = plt.subplots(figsize=(12, 6))
         
         # Plot line
-        ax.plot(range(len(df)), df['pm25'], marker='o', linewidth=2, 
+        ax.plot(range(len(pm25_values)), pm25_values, marker='o', linewidth=2, 
                markersize=6, color='#2E86AB', label='PM2.5')
         
         # Color zones based on AQI categories
@@ -213,15 +225,15 @@ class PM25Visualizer:
         ax.legend(loc='upper left', fontsize=9)
         
         # X-axis labels - show every 5th date if too many
-        if len(df) > 10:
-            step = max(1, len(df) // 10)
-            indices = range(0, len(df), step)
+        if len(dates) > 10:
+            step = max(1, len(dates) // 10)
+            indices = range(0, len(dates), step)
             ax.set_xticks(indices)
-            ax.set_xticklabels([df.iloc[i]['date'].split()[0] for i in indices], 
+            ax.set_xticklabels([dates[i].split()[0] for i in indices], 
                               rotation=45, ha='right')
         else:
-            ax.set_xticks(range(len(df)))
-            ax.set_xticklabels([d.split()[0] for d in df['date']], 
+            ax.set_xticks(range(len(dates)))
+            ax.set_xticklabels([d.split()[0] for d in dates], 
                               rotation=45, ha='right')
         
         plt.tight_layout()

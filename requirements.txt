@@ -10,12 +10,5 @@ opencv-python-headless==4.10.0.84
 numpy==2.2.2
 Pillow==11.0.0
 
-# Data Analysis
-pandas==2.2.3
-
 # Visualization
 matplotlib==3.9.2
-seaborn==0.13.2
-
-# Utilities
-python-dateutil==2.8.2
