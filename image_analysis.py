@@ -87,7 +87,7 @@ class ImageAnalyzer:
         """
         # Calculate mean brightness
         brightness = np.mean(self.gray_image)
-        return brightness
+        return float(brightness)
     
     def calculate_contrast(self) -> float:
         """
@@ -118,7 +118,7 @@ class ImageAnalyzer:
         saturation_channel = self.hsv_image[:, :, 1]
         avg_saturation = np.mean(saturation_channel)
         
-        return avg_saturation
+        return float(avg_saturation)
     
     def calculate_atmospheric_turbidity(self) -> float:
         """
@@ -139,7 +139,7 @@ class ImageAnalyzer:
         # Normalize to 0-100
         turbidity_score = (turbidity / 255) * 100
         
-        return turbidity_score
+        return float(turbidity_score)
     
     def calculate_visibility_index(self) -> float:
         """

@@ -209,9 +209,9 @@ class PM25Estimator:
         
         # Convert to confidence (0-100%)
         # Low std_dev = high confidence
-        confidence = max(50, 100 - std_dev)
+        confidence = max(50, 100 - float(std_dev))
         
-        return round(confidence, 1)
+        return float(round(confidence, 1))
 
 
 def estimate_pm25(features: Dict[str, float]) -> Dict[str, any]:

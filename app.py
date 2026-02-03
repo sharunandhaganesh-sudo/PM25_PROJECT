@@ -10,6 +10,8 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import traceback
+import json
+import numpy as np
 
 # Import our custom modules
 from image_analysis import ImageAnalyzer
@@ -17,8 +19,22 @@ from pm25_estimator import PM25Estimator
 from visualization import PM25Visualizer
 
 
+# Custom JSON Encoder to handle numpy types
+class NumpyEncoder(json.JSONEncoder):
+    """JSON encoder that can handle numpy data types."""
+    def default(self, obj):
+        if isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
+
 # Initialize Flask app
 app = Flask(__name__)
+app.json_encoder = NumpyEncoder
 app.config['SECRET_KEY'] = 'pm25-estimation-secret-key-2026'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['RESULTS_FOLDER'] = 'static/results'
@@ -116,18 +132,18 @@ def analyze():
         # Prepare response with all results
         response_data = {
             'success': True,
-            'pm25': pm25_value,
-            'confidence': estimation_results['confidence'],
+            'pm25': float(pm25_value),
+            'confidence': float(estimation_results['confidence']),
             'aqi_category': estimation_results['aqi_category'],
             'aqi_color': estimation_results['aqi_color'],
             'health_advice': estimation_results['health_advice'],
             'features': {
-                'haze_score': round(features['haze_score'], 2),
-                'turbidity': round(features['turbidity'], 2),
-                'visibility': round(features['visibility'], 2),
-                'contrast': round(features['contrast'], 2),
-                'brightness': round(features['brightness'], 2),
-                'saturation': round(features['saturation'], 2)
+                'haze_score': float(round(features['haze_score'], 2)),
+                'turbidity': float(round(features['turbidity'], 2)),
+                'visibility': float(round(features['visibility'], 2)),
+                'contrast': float(round(features['contrast'], 2)),
+                'brightness': float(round(features['brightness'], 2)),
+                'saturation': float(round(features['saturation'], 2))
             },
             'images': {
                 'original': url_for('static', filename=f'uploads/{unique_filename}'),
