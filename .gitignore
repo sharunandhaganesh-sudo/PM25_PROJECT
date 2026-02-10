@@ -55,3 +55,12 @@ data/pm25_history.csv
 # OS
 .DS_Store
 Thumbs.db
+
+
+# Datasets images folder (kept out of repo to avoid large files)
+# Ignore all contents but allow top-level helper files (scripts, README, .gitkeep)
+datasets_images/*
+!datasets_images/*.py
+!datasets_images/README.md
+!datasets_images/.gitkeep
+
